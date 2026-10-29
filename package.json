@@ -1,0 +1,25 @@
+{
+  "name": "carrocel-de-astros",
+  "version": "1.0.0",
+  "description": "Aplicação que utiliza NASA APIs APOD para buscar links de imagens que contenham um astro específico passado pelo usuário e que não tenha copyright.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasconcelosousa2508-collab/Carrocel-de-Astros.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vasconcelosousa2508-collab/Carrocel-de-Astros/issues"
+  },
+  "homepage": "https://github.com/vasconcelosousa2508-collab/Carrocel-de-Astros#readme",
+  "dependencies": {
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-generator": "^4.16.1"
+  }
+}

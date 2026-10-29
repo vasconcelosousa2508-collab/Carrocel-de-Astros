@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrossel de Astros</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #090b12;
+      color: #f7f2e8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77, 109, 148, .18), transparent 24rem),
+        #090b12;
+    }
+
+    main { width: min(900px, calc(100% - 32px)); }
+
+    h1 { font-size: clamp(2rem, 7vw, 4.5rem); margin: 0 0 24px; text-align: center; }
+
+    form { display: flex; gap: 8px; margin-bottom: 24px; }
+
+    input, button {
+      min-height: 44px;
+      border: 1px solid #d9d0bc;
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 0 14px;
+      background: #11151f;
+      color: inherit;
+    }
+
+    button { padding: 0 18px; cursor: pointer; background: #e7ded0; color: #11151f; }
+
+    #status { min-height: 24px; text-align: center; }
+
+    .carousel {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 1px solid rgba(217, 208, 188, .35);
+      background: #11151f;
+    }
+
+    .slide { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .slide.active { display: block; }
+
+    .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(9, 11, 18, .8);
+      color: white;
+      font-size: 24px;
+    }
+
+    #previous { left: 12px; }
+    #next { right: 12px; }
+
+    .caption {
+      min-height: 70px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      form { flex-direction: column; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Carrossel de Astros</h1>
+
+    <form id="search-form">
+      <input id="search-input" type="search" placeholder="Ex.: Marte, Lua, Júpiter" aria-label="Nome do astro" required>
+      <button type="submit">Buscar</button>
+    </form>
+
+    <p id="status" role="status"></p>
+
+    <section class="carousel" aria-label="Resultados da busca">
+      <div id="slides"></div>
+      <button id="previous" class="nav" type="button" aria-label="Imagem anterior">‹</button>
+      <button id="next" class="nav" type="button" aria-label="Próxima imagem">›</button>
+    </section>
+    <div id="caption" class="caption"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('search-input');
+    const slides = document.getElementById('slides');
+    const caption = document.getElementById('caption');
+    const status = document.getElementById('status');
+    let results = [];
+    let current = 0;
+
+    function showCurrent() {
+      const images = slides.querySelectorAll('.slide');
+      images.forEach((image, index) => image.classList.toggle('active', index === current));
+
+      const result = results[current];
+      caption.textContent = result ? result.title : '';
+    }
+
+    function move(direction) {
+      if (!results.length) return;
+      current = (current + direction + results.length) % results.length;
+      showCurrent();
+    }
+
+    document.getElementById('previous').addEventListener('click', () => move(-1));
+    document.getElementById('next').addEventListener('click', () => move(1));
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.textContent = 'Buscando imagens...';
+      slides.replaceChildren();
+      caption.textContent = '';
+      results = [];
+
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(input.value)}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error);
+        if (!data.length) {
+          status.textContent = 'Nenhuma imagem encontrada para essa busca.';
+          return;
+        }
+
+        results = data;
+        current = 0;
+        data.forEach((result, index) => {
+          const image = document.createElement('img');
+          image.className = `slide${index === 0 ? ' active' : ''}`;
+          image.src = result.imageUrl;
+          image.alt = result.title;
+          slides.appendChild(image);
+        });
+        status.textContent = `${data.length} imagem(ns) encontrada(s)`;
+        showCurrent();
+      } catch (error) {
+        status.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
